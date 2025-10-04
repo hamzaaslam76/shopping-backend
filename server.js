@@ -15,15 +15,9 @@ process.on('uncaughtException', err => {
     console.log(`catch unhandle expection`);
     process.exit(1); 
 });
-mongoose.connect(DB, {
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true
-
-}).then(con => {
+mongoose.connect(DB).then(con => {
     console.log("connaction is successfuly");
-});
+}).catch((err) => console.error("❌ MongoDB connection error:", err));;
 //console.log(process.env);
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {
