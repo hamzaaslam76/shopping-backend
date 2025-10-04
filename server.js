@@ -1,7 +1,7 @@
 const dotenv = require('dotenv');
 dotenv.config({ path: './config.env' });
 const app = require('./app');
-const mongoose = require('mongoose');
+const connectDB = require('./utils/database');
 
 // Prefer local DB when available (useful for development), otherwise fall back to Atlas
 const isDevelopment = (process.env.NODE_ENV || '').toLowerCase() === 'development';
@@ -10,14 +10,21 @@ let DB = process.env.LOCAL_DATABASE && isDevelopment ? process.env.LOCAL_DATABAS
 if (DB && DB.includes('<PASSWORD>') && process.env.DATABASE_PASSWORD) {
     DB = DB.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
 }
+
+// Set the DATABASE environment variable for the connection handler
+process.env.DATABASE = DB;
+
 process.on('uncaughtException', err => {
     console.log(err.name, err.message);
     console.log(`catch unhandle expection`);
     process.exit(1); 
 });
-mongoose.connect(DB).then(con => {
-    console.log("connaction is successfuly");
-}).catch((err) => console.error("❌ MongoDB connection error:", err));;
+
+// Connect to database
+connectDB().catch(err => {
+    console.error('❌ Database connection failed:', err);
+    process.exit(1);
+});
 //console.log(process.env);
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {
