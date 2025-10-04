@@ -6,6 +6,7 @@ let isConnected = false;
 
 const connectToDatabase = async () => {
   if (isConnected) {
+    console.log('✅ Database connected for serverless function');
     return;
   }
   
