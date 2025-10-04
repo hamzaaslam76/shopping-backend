@@ -10,7 +10,7 @@ route.post('/login', Login);
 route.post('/forgetpassword',forgetpassword);
 route.patch('/resetpassword/:token', resetpassword);
 route.get("/hamza", ((req,res)=>{
-return  res.status(200).send("hamza aslam call");
+return  res.status(200).send("hamza aslam  sdfsad call");
 }))
 
 // protect all routes after this middleware
