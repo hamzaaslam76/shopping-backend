@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Product Available - {{productTitle}}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .product-section {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+        .product-image {
+            width: 100%;
+            max-width: 300px;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .product-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin: 15px 0 10px 0;
+        }
+        .product-price {
+            font-size: 20px;
+            color: #e74c3c;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .product-old-price {
+            font-size: 16px;
+            color: #999;
+            text-decoration: line-through;
+            margin-left: 10px;
+        }
+        .product-description {
+            color: #666;
+            font-size: 16px;
+            margin: 15px 0;
+        }
+        .product-details {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #e9ecef;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #555;
+        }
+        .detail-value {
+            color: #333;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 20px 0;
+            transition: transform 0.3s ease;
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+        .features {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        .features h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            color: #666;
+            position: relative;
+            padding-left: 25px;
+        }
+        .feature-list li:before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+        .footer {
+            background-color: #2c3e50;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .footer h3 {
+            margin: 0 0 15px 0;
+            font-size: 20px;
+        }
+        .footer p {
+            margin: 5px 0;
+            color: #bdc3c7;
+        }
+        .social-links {
+            margin: 20px 0;
+        }
+        .social-links a {
+            color: #3498db;
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 14px;
+        }
+        .unsubscribe {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #95a5a6;
+        }
+        .unsubscribe a {
+            color: #95a5a6;
+            text-decoration: none;
+        }
+        @media (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                box-shadow: none;
+            }
+            .content {
+                padding: 20px 15px;
+            }
+            .product-title {
+                font-size: 20px;
+            }
+            .product-price {
+                font-size: 18px;
+            }
+            .cta-button {
+                display: block;
+                text-align: center;
+                margin: 20px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎉 New Product Alert!</h1>
+            <p>Discover our latest addition to the collection</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <h2 style="color: #333; text-align: center; margin-bottom: 30px;">Exciting News! A New Product Has Been Added</h2>
+            
+            <p style="font-size: 16px; color: #666; text-align: center; margin-bottom: 30px;">
+                We're thrilled to announce that a new product has been added to our collection. 
+                Check out the details below and be among the first to explore this amazing addition!
+            </p>
+
+            <!-- Product Section -->
+            <div class="product-section">
+                {{#if productImage}}
+                <img src="{{productImage}}" alt="{{productTitle}}" class="product-image">
+                {{/if}}
+                
+                <h3 class="product-title">{{productTitle}}</h3>
+                
+                <div class="product-price">
+                    ${{productPrice}}
+                    {{#if productOldPrice}}
+                    <span class="product-old-price">${{productOldPrice}}</span>
+                    {{/if}}
+                </div>
+                
+                {{#if productDescription}}
+                <p class="product-description">{{productDescription}}</p>
+                {{/if}}
+            </div>
+
+            <!-- Product Details -->
+            <div class="product-details">
+                <h3 style="color: #333; margin-bottom: 20px; font-size: 18px;">Product Details</h3>
+                
+                {{#if productBrand}}
+                <div class="detail-row">
+                    <span class="detail-label">Brand:</span>
+                    <span class="detail-value">{{productBrand}}</span>
+                </div>
+                {{/if}}
+                
+                {{#if productGender}}
+                <div class="detail-row">
+                    <span class="detail-label">Gender:</span>
+                    <span class="detail-value">{{productGender}}</span>
+                </div>
+                {{/if}}
+                
+                {{#if productMaterial}}
+                <div class="detail-row">
+                    <span class="detail-label">Material:</span>
+                    <span class="detail-value">{{productMaterial}}</span>
+                </div>
+                {{/if}}
+                
+                {{#if productStyle}}
+                <div class="detail-row">
+                    <span class="detail-label">Style:</span>
+                    <span class="detail-value">{{productStyle}}</span>
+                </div>
+                {{/if}}
+                
+                {{#if productCategory}}
+                <div class="detail-row">
+                    <span class="detail-label">Category:</span>
+                    <span class="detail-value">{{productCategory}}</span>
+                </div>
+                {{/if}}
+                
+                {{#if productSizes}}
+                <div class="detail-row">
+                    <span class="detail-label">Available Sizes:</span>
+                    <span class="detail-value">{{productSizes}}</span>
+                </div>
+                {{/if}}
+                
+                {{#if productStock}}
+                <div class="detail-row">
+                    <span class="detail-label">Stock Available:</span>
+                    <span class="detail-value">{{productStock}} units</span>
+                </div>
+                {{/if}}
+            </div>
+
+            <!-- Features -->
+            <div class="features">
+                <h3>Why You'll Love This Product</h3>
+                <ul class="feature-list">
+                    <li>Premium quality materials</li>
+                    <li>Latest fashion trends</li>
+                    <li>Comfortable fit and design</li>
+                    <li>Great value for money</li>
+                    <li>Fast shipping available</li>
+                </ul>
+            </div>
+
+            <!-- Call to Action -->
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{productUrl}}" class="cta-button">View Product Details</a>
+            </div>
+
+            <p style="text-align: center; color: #666; font-size: 14px; margin-top: 30px;">
+                Don't miss out on this amazing product! Limited stock available.
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <h3>Thank You for Being a Valued Customer!</h3>
+            <p>We appreciate your continued support and trust in our products.</p>
+            
+            <div class="social-links">
+                <a href="#">Facebook</a>
+                <a href="#">Twitter</a>
+                <a href="#">Instagram</a>
+                <a href="#">LinkedIn</a>
+            </div>
+            
+            <p><strong>Contact Information:</strong></p>
+            <p>Email: support@yourstore.com</p>
+            <p>Phone: +1 (555) 123-4567</p>
+            <p>Address: 123 Fashion Street, Style City, SC 12345</p>
+            
+            <div class="unsubscribe">
+                <p>
+                    You received this email because you're subscribed to our product notifications. 
+                    <a href="{{unsubscribeUrl}}">Unsubscribe</a> | 
+                    <a href="{{preferencesUrl}}">Update Preferences</a>
+                </p>
+                <p>&copy; 2024 Your Store Name. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
