@@ -12,18 +12,8 @@ async function connectDB() {
   }
 
   if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-      bufferMaxEntries: 0,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-      maxPoolSize: 1, // Maintain only 1 connection in serverless
-      family: 4, // Use IPv4, skip trying IPv6
-    };
-
-    cached.promise = mongoose.connect(process.env.DATABASE, opts).then((mongoose) => {
+ 
+    cached.promise = mongoose.connect(process.env.DATABASE).then((mongoose) => {
       console.log('✅ MongoDB connected successfully');
       return mongoose;
     }).catch((err) => {
