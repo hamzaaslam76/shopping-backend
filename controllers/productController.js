@@ -5,28 +5,15 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
 const emailService = require('../utils/emailService');
+const pinataService = require('../utils/pinataService');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Configure multer for product images
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadPath = './public/uploads/products/';
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'product-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
+// Configure multer for product images (memory storage for Pinata upload)
 const upload = multer({ 
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  storage: multer.memoryStorage(), // Store in memory for Pinata upload
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit (increased for IPFS)
   fileFilter: function (req, file, cb) {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
@@ -65,28 +52,60 @@ exports.createProduct = catchAsync(async (req, res, next) => {
     productData.careInstructions = JSON.parse(productData.careInstructions);
   }
 
-  // Handle main images
+  // Handle main images upload to Pinata IPFS
   if (req.files && req.files.mainImages) {
-    productData.mainImages = req.files.mainImages.map((file, index) => ({
-      url: `/uploads/products/${file.filename}`,
-      alt: file.originalname,
-      isPrimary: index === 0
-    }));
+    try {
+      const uploadResults = await pinataService.uploadMultipleFiles(req.files.mainImages, {
+        name: `product_main_images_${Date.now()}`,
+        type: 'product-main-image',
+        metadata: {
+          productTitle: productData.title || 'Unknown Product',
+          uploadedBy: req.user?.id || 'system'
+        }
+      });
+
+      productData.mainImages = uploadResults.map((result, index) => ({
+        url: result.url,
+        ipfsHash: result.ipfsHash,
+        alt: req.files.mainImages[index].originalname,
+        isPrimary: index === 0,
+        uploadedAt: new Date().toISOString()
+      }));
+    } catch (error) {
+      console.error('Pinata main images upload failed:', error);
+      return next(new AppError('Failed to upload main images to IPFS', 500));
+    }
   }
 
-  // Handle variant images
+  // Handle variant images upload to Pinata IPFS
   if (req.files && req.files.variantImages && productData.variants) {
-    const variantImages = req.files.variantImages.map(file => ({
-      url: `/uploads/products/${file.filename}`,
-      alt: file.originalname
-    }));
-    
-    // Distribute images to variants (simple distribution)
-    productData.variants.forEach((variant, index) => {
-      if (variantImages[index]) {
-        variant.images = [variantImages[index]];
-      }
-    });
+    try {
+      const uploadResults = await pinataService.uploadMultipleFiles(req.files.variantImages, {
+        name: `product_variant_images_${Date.now()}`,
+        type: 'product-variant-image',
+        metadata: {
+          productTitle: productData.title || 'Unknown Product',
+          uploadedBy: req.user?.id || 'system'
+        }
+      });
+
+      const variantImages = uploadResults.map((result, index) => ({
+        url: result.url,
+        ipfsHash: result.ipfsHash,
+        alt: req.files.variantImages[index].originalname,
+        uploadedAt: new Date().toISOString()
+      }));
+      
+      // Distribute images to variants (simple distribution)
+      productData.variants.forEach((variant, index) => {
+        if (variantImages[index]) {
+          variant.images = [variantImages[index]];
+        }
+      });
+    } catch (error) {
+      console.error('Pinata variant images upload failed:', error);
+      return next(new AppError('Failed to upload variant images to IPFS', 500));
+    }
   }
 
   const product = await Product.create(productData);
@@ -141,19 +160,36 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
     }
   }
 
-  // Handle new main images
+  // Handle new main images upload to Pinata IPFS
   if (req.files && req.files.mainImages) {
-    const newMainImages = req.files.mainImages.map((file, index) => ({
-      url: `/uploads/products/${file.filename}`,
-      alt: file.originalname,
-      isPrimary: index === 0
-    }));
-    
-    const existingProduct = await Product.findById(req.params.id);
-    if (existingProduct && existingProduct.mainImages) {
-      updateData.mainImages = [...existingProduct.mainImages, ...newMainImages];
-    } else {
-      updateData.mainImages = newMainImages;
+    try {
+      const uploadResults = await pinataService.uploadMultipleFiles(req.files.mainImages, {
+        name: `product_main_images_update_${req.params.id}_${Date.now()}`,
+        type: 'product-main-image',
+        metadata: {
+          productId: req.params.id,
+          uploadedBy: req.user?.id || 'system',
+          isUpdate: true
+        }
+      });
+
+      const newMainImages = uploadResults.map((result, index) => ({
+        url: result.url,
+        ipfsHash: result.ipfsHash,
+        alt: req.files.mainImages[index].originalname,
+        isPrimary: index === 0,
+        uploadedAt: new Date().toISOString()
+      }));
+      
+      const existingProduct = await Product.findById(req.params.id);
+      if (existingProduct && existingProduct.mainImages) {
+        updateData.mainImages = [...existingProduct.mainImages, ...newMainImages];
+      } else {
+        updateData.mainImages = newMainImages;
+      }
+    } catch (error) {
+      console.error('Pinata main images upload failed:', error);
+      return next(new AppError('Failed to upload main images to IPFS', 500));
     }
   }
 

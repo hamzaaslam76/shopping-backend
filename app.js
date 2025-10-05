@@ -18,6 +18,7 @@ const couponRoutes = require('./Routers/couponRoutes');
 const addressRoutes = require('./Routers/addressRoutes');
 const customerRoutes = require('./Routers/customerRoutes');
 const emailRoutes = require('./Routers/emailRoutes');
+const testRoutes = require('./Routers/testRoutes');
 const AppError = require('./utils/appError');
 const app = express();
 const globalErrorHandal = require('./controllers/erroeController');
@@ -114,6 +115,7 @@ app.use('/api/v1/coupons', couponRoutes);
 app.use('/api/v1/addresses', addressRoutes);
 app.use('/api/v1/customer', customerRoutes);
 app.use('/api/v1/emails', emailRoutes);
+app.use('/api/v1/test', testRoutes);
 // middeware error handle not matching route
 app.all('*', (req, res, next) => {
     next(new AppError(`can not find ${req.originalUrl} on this server `,400));

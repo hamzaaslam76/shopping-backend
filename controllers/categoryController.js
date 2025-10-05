@@ -3,28 +3,15 @@ const Product = require('../Models/productModel');
 const factory = require('./handlerFactory');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
+const pinataService = require('../utils/pinataService');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Configure multer for category images
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadPath = './public/uploads/categories/';
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'category-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
+// Configure multer for category images (memory storage for Pinata upload)
 const upload = multer({ 
-  storage: storage,
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
+  storage: multer.memoryStorage(), // Store in memory for Pinata upload
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit (increased for IPFS)
   fileFilter: function (req, file, cb) {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
@@ -36,16 +23,32 @@ const upload = multer({
 
 exports.uploadCategoryImage = upload.single('image');
 
-// Enhanced category creation
+// Enhanced category creation with Pinata IPFS upload
 exports.createCategory = catchAsync(async (req, res, next) => {
   let categoryData = { ...req.body };
   
-  // Handle image upload
+  // Handle image upload to Pinata IPFS
   if (req.file) {
-    categoryData.image = {
-      url: `/uploads/categories/${req.file.filename}`,
-      alt: req.file.originalname
-    };
+    try {
+      const uploadResult = await pinataService.uploadFile(req.file, {
+        name: `category_${Date.now()}_${req.file.originalname}`,
+        type: 'category-image',
+        metadata: {
+          categoryName: categoryData.name || 'Unknown',
+          uploadedBy: req.user?.id || 'system'
+        }
+      });
+
+      categoryData.image = {
+        url: uploadResult.url,
+        ipfsHash: uploadResult.ipfsHash,
+        alt: req.file.originalname,
+        uploadedAt: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Pinata upload failed:', error);
+      return next(new AppError('Failed to upload image to IPFS', 500));
+    }
   }
 
   const category = await Category.create(categoryData);
@@ -58,7 +61,7 @@ exports.createCategory = catchAsync(async (req, res, next) => {
   });
 });
 
-// Enhanced category update
+// Enhanced category update with Pinata IPFS upload
 exports.updateCategory = catchAsync(async (req, res, next) => {
   let updateData = { ...req.body };
   
@@ -72,12 +75,33 @@ exports.updateCategory = catchAsync(async (req, res, next) => {
     }
   }
   
-  // Handle new image upload
+  // Handle new image upload to Pinata IPFS
   if (req.file) {
-    updateData.image = {
-      url: `/uploads/categories/${req.file.filename}`,
-      alt: req.file.originalname
-    };
+    try {
+      // Get existing category to preserve current image info
+      const existingCategory = await Category.findById(req.params.id);
+      
+      const uploadResult = await pinataService.uploadFile(req.file, {
+        name: `category_${req.params.id}_${Date.now()}_${req.file.originalname}`,
+        type: 'category-image',
+        metadata: {
+          categoryId: req.params.id,
+          categoryName: updateData.name || existingCategory?.name || 'Unknown',
+          uploadedBy: req.user?.id || 'system',
+          isUpdate: true
+        }
+      });
+
+      updateData.image = {
+        url: uploadResult.url,
+        ipfsHash: uploadResult.ipfsHash,
+        alt: req.file.originalname,
+        uploadedAt: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Pinata upload failed:', error);
+      return next(new AppError('Failed to upload image to IPFS', 500));
+    }
   }
 
   const category = await Category.findByIdAndUpdate(req.params.id, updateData, {
