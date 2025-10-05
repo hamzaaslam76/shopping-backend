@@ -78,7 +78,7 @@ exports.createProduct = catchAsync(async (req, res, next) => {
   }
 
   // Handle variant images upload to Pinata IPFS
-  if (req.files && req.files.variantImages && productData.variants) {
+  if (req.files && req.files.variantImages) {
     try {
       const uploadResults = await pinataService.uploadMultipleFiles(req.files.variantImages, {
         name: `product_variant_images_${Date.now()}`,
@@ -97,11 +97,13 @@ exports.createProduct = catchAsync(async (req, res, next) => {
       }));
       
       // Distribute images to variants (simple distribution)
-      productData.variants.forEach((variant, index) => {
-        if (variantImages[index]) {
-          variant.images = [variantImages[index]];
-        }
-      });
+      if (productData.variants && Array.isArray(productData.variants)) {
+        productData.variants.forEach((variant, index) => {
+          if (variantImages[index]) {
+            variant.images = [variantImages[index]];
+          }
+        });
+      }
     } catch (error) {
       console.error('Pinata variant images upload failed:', error);
       return next(new AppError('Failed to upload variant images to IPFS', 500));

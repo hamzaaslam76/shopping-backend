@@ -1,3 +1,6 @@
+// Load environment variables
+require('dotenv').config({ path: './config.env' });
+
 const pinataService = require('../utils/pinataService');
 const path = require('path');
 

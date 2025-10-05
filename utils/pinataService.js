@@ -30,7 +30,12 @@ class PinataService {
           keyvalues: {
             type: options.type || 'image',
             uploadedAt: new Date().toISOString(),
-            ...options.metadata
+            ...Object.fromEntries(
+              Object.entries(options.metadata || {}).map(([key, value]) => [
+                key, 
+                typeof value === 'string' || typeof value === 'number' ? value : String(value)
+              ])
+            )
           }
         },
         pinataOptions: {
@@ -98,15 +103,20 @@ class PinataService {
       const readableStream = fs.createReadStream(filePath);
       const fileName = path.basename(filePath);
       
-      const uploadOptions = {
-        pinataMetadata: {
-          name: options.name || fileName,
-          keyvalues: {
-            type: options.type || 'image',
-            uploadedAt: new Date().toISOString(),
-            ...options.metadata
-          }
-        },
+        const uploadOptions = {
+          pinataMetadata: {
+            name: options.name || fileName,
+            keyvalues: {
+              type: options.type || 'image',
+              uploadedAt: new Date().toISOString(),
+              ...Object.fromEntries(
+                Object.entries(options.metadata || {}).map(([key, value]) => [
+                  key, 
+                  typeof value === 'string' || typeof value === 'number' ? value : String(value)
+                ])
+              )
+            }
+          },
         pinataOptions: {
           cidVersion: 0,
           wrapWithDirectory: false
